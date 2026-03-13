@@ -1,0 +1,54 @@
+@model OscarsBallot.ViewModels.Admin.AdminCategoriesViewModel
+@{
+    ViewData["Title"] = "Admin Categories";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Admin Categories</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back to Winners</a>
+</div>
+
+<p class="text-muted">Update category names and points used for scoring.</p>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+
+<form asp-action="Categories" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+            <tr>
+                <th>Category Name</th>
+                <th style="width: 180px;">Points</th>
+            </tr>
+            </thead>
+            <tbody>
+            @for (var i = 0; i < Model.Categories.Count; i++)
+            {
+                <tr>
+                    <td>
+                        <input type="hidden" asp-for="Categories[i].CategoryId" />
+                        <input asp-for="Categories[i].CategoryName" class="form-control" />
+                        <span asp-validation-for="Categories[i].CategoryName" class="text-danger"></span>
+                    </td>
+                    <td>
+                        <input asp-for="Categories[i].Points" class="form-control" />
+                        <span asp-validation-for="Categories[i].Points" class="text-danger"></span>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Category Updates</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,41 @@
+@model OscarsBallot.ViewModels.Account.AccountBallotViewModel
+@{
+    ViewData["Title"] = "My Account";
+}
+
+<h1 class="mb-3">My Account</h1>
+<p class="text-muted">Signed in as @Model.UserDisplayName</p>
+
+@if (!Model.HasBallot)
+{
+    <div class="alert alert-info">No ballot yet! Go fill one out!</div>
+    <a class="btn btn-primary" asp-controller="Ballot" asp-action="Index">Fill Out Ballot</a>
+}
+else
+{
+    <p class="text-muted">Review your current ballot picks below.</p>
+
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+            <tr>
+                <th>Category</th>
+                <th>First Choice</th>
+                <th>Second Choice</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var category in Model.Categories)
+            {
+                <tr>
+                    <td>@category.CategoryName</td>
+                    <td>@category.FirstChoiceName</td>
+                    <td>@category.SecondChoiceName</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <a class="btn btn-primary" asp-controller="Ballot" asp-action="Index">Change Ballot</a>
+}

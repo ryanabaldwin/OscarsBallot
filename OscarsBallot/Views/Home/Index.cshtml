@@ -1,0 +1,60 @@
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="py-4">
+    <h1 class="display-5">Ryan's Oscar Ballot Challenge 2026</h1>
+    <p class="lead">
+        Welcome to my Oscars ballot!
+    </p>
+
+    <p>
+        If you know me, you know I love movies.
+    </p>
+
+    <p>
+        This year, I've kept up with the Oscars race more than I ever have (it's actually the first year I've ever seen each Best Picture nominee).<br>
+        I wanted to share that with others, so I threw this site together!
+    </p>
+
+    <p><strong>Here's how it works:</strong></p>
+
+    <ol>
+        <li>
+            Create an account with your name and a unique PIN (don't share this unless you want other people editing your ballot).
+        </li>
+        <li>
+            Fill out your ballot! Each category has a different amount of points weighted by category significance (with Best Picture being the highest).
+        </li>
+        <li>
+            You get two choices for each category:
+            <ul>
+                <li>If your first choice is correct, you get full points for that category.</li>
+                <li>If your second choice is correct, you get half points for that category.</li>
+            </ul>
+        </li>
+    </ol>
+
+    <p>
+        You can edit your ballot any time before the start of the Oscars ceremony (5 P.M. Mountain Time); just log in with your name and PIN to make changes.<br>
+        I will be updating the site as winners are named. You can keep track of your score from the Account page and view who's winning from the Leaderboard page.<br>
+        Additionally, feel free to download a PDF copy of the ballot with my scoring system on it below.
+    </p>
+
+    <p>
+        Have fun and happy Oscars!
+    </p>
+</div>
+
+    <div class="mt-4 d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-primary" asp-controller="Account" asp-action="Register">Create Account</a>
+        <a class="btn btn-outline-primary" asp-controller="Account" asp-action="Login">Sign In</a>
+        <a class="btn btn-outline-secondary" asp-controller="Ballot" asp-action="Index">Submit Ballot</a>
+        <a class="btn btn-outline-secondary" asp-controller="Leaderboard" asp-action="Index">View Leaderboard</a>
+    </div>
+
+<div class="mt-4">
+    <p>
+        <!-- Later, insert link to PDF -->
+    </p>
+</div>

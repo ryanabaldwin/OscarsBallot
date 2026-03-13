@@ -1,0 +1,73 @@
+@model OscarsBallot.ViewModels.Ballot.BallotSubmissionViewModel
+@{
+    ViewData["Title"] = "Submit Ballot";
+}
+
+<h1 class="mb-3">Oscar Ballot</h1>
+<p class="text-muted">Choose your first and second pick in each category, then save your ballot.</p>
+
+@if (TempData["SuccessMessage"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+
+<form asp-action="Index" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    @for (var i = 0; i < Model.Categories.Count; i++)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <input type="hidden" asp-for="Categories[i].CategoryId"/>
+                <h5 class="card-title">@Model.Categories[i].CategoryName</h5>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Categories[i].FirstChoiceNomineeId" class="form-label">First Choice</label>
+                        <select asp-for="Categories[i].FirstChoiceNomineeId" class="form-select">
+                            @if (Model.Categories[i].Nominees.Count == 0)
+                            {
+                                <option value="">No nominees available yet</option>
+                            }
+                            else
+                            {
+                                <option value="">Select first choice</option>
+                                @foreach (var nominee in Model.Categories[i].Nominees)
+                                {
+                                    <option value="@nominee.NomineeId">@nominee.Name</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="Categories[i].FirstChoiceNomineeId" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Categories[i].SecondChoiceNomineeId" class="form-label">Second Choice</label>
+                        <select asp-for="Categories[i].SecondChoiceNomineeId" class="form-select">
+                            @if (Model.Categories[i].Nominees.Count == 0)
+                            {
+                                <option value="">No nominees available yet</option>
+                            }
+                            else
+                            {
+                                <option value="">Select second choice</option>
+                                @foreach (var nominee in Model.Categories[i].Nominees)
+                                {
+                                    <option value="@nominee.NomineeId">@nominee.Name</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="Categories[i].SecondChoiceNomineeId" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <button type="submit" class="btn btn-primary">Save Ballot</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}

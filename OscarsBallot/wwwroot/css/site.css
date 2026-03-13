@@ -1,0 +1,343 @@
+/* Oscars Ballot — Academy Gold Theme
+   Drop into styles.css. Uses CSS variables for easy theming. */
+
+:root{
+  /* Core color palette (golds + warm neutrals) */
+  --brand-gold-900: #5a4200;   /* deep bronze */
+  --brand-gold-700: #b8860b;   /* primary gold (dominant) */
+  --brand-gold-500: #ffd24a;   /* bright accent / hover */
+  --neutral-900: #0f0f10;      /* text / deep backdrop */
+  --neutral-700: #333333;      /* secondary text */
+  --neutral-500: #8b8b8b;      /* muted */
+  --neutral-100: #f8f6f2;      /* paper */
+  --white: #ffffff;
+  --glass: rgba(255,255,255,0.03);
+
+  /* layout & typography */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 2px 6px rgba(8,6,4,0.06);
+  --shadow-md: 0 6px 20px rgba(8,6,4,0.14);
+  --max-width: 1100px;
+  --container-pad: 20px;
+
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --heading-weight: 600;
+  --body-weight: 400;
+}
+
+/* Base reset + sensible defaults */
+* { box-sizing: border-box; }
+html,body { height:100%; }
+body{
+  font-family: var(--font-sans);
+  color: var(--neutral-900);
+  background: linear-gradient(180deg, #0b0b0c 0%, #111010 100%); /* subtle dark backdrop */
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  margin:0;
+  padding: 32px;
+  line-height:1.45;
+}
+
+/* Improve contrast for bootstrap-muted text on dark background */
+.text-muted {
+  color: #F2ECE2 !important;
+}
+
+/* App container */
+.app {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: var(--shadow-md);
+  color: var(--white);
+}
+
+/* Lead paragraph */
+.lead {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--white);
+  margin: 0 0 12px 0;
+  letter-spacing: 0.2px;
+}
+
+/* Paragraphs and small copy */
+p {
+  margin: 0 0 12px 0;
+  color: #F2ECE2;
+  font-weight: var(--body-weight);
+}
+
+/* Lists on dark background should match body copy contrast */
+ol, ul, li {
+  color: #F2ECE2;
+}
+
+/* Headings */
+h1,h2,h3 {
+  margin: 0 0 12px 0;
+  color: var(--white);
+  font-weight: var(--heading-weight);
+}
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1rem; color: #f6f0ec; }
+
+/* Strong/labels */
+strong { color: #fff; }
+
+/* Form layout */
+.form {
+  background: rgba(0,0,0,0.26);
+  padding: 18px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+}
+
+/* Form group */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.form-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Labels */
+label {
+  font-size: 0.9rem;
+  color: #efe6d6;
+}
+
+/* Inputs, textarea */
+input[type="text"],
+input[type="number"],
+input[type="password"],
+textarea,
+select {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--white);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  min-height: 44px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: box-shadow .16s ease, border-color .16s ease, transform .08s ease;
+}
+
+/* larger clickable area for selects (important for many dropdowns) */
+select {
+  appearance: none; /* custom arrow */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--white) 50%),
+  linear-gradient(135deg, var(--white) 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(1em + 2px), calc(100% - 13px) calc(1em + 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 38px;
+}
+
+/* Textarea */
+textarea { min-height: 110px; resize:vertical; }
+
+/* Focus states — accessible + visible */
+input:focus, textarea:focus, select:focus, .btn:focus {
+  box-shadow: 0 6px 20px rgba(12,8,4,0.45), 0 0 0 3px rgba(189,153,62,0.18);
+  border-color: var(--brand-gold-700);
+}
+
+/* Disabled state */
+input[disabled], select[disabled], textarea[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items:center;
+  gap: 8px;
+  justify-content: center;
+  padding: 10px 14px;
+  min-height: 44px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: transform .06s ease, box-shadow .12s ease, opacity .12s ease;
+  text-decoration: none;
+  color: var(--neutral-900);
+  background: linear-gradient(180deg, var(--brand-gold-700), var(--brand-gold-500));
+  box-shadow: 0 8px 22px rgba(184,134,11,0.18);
+}
+.btn:hover { transform: translateY(-1px); background: linear-gradient(180deg, var(--brand-gold-500), #ffe07a); }
+.btn:active { transform: translateY(0); }
+.btn.secondary {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: none;
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--white);
+  border: none;
+  box-shadow: none;
+}
+
+/* Small button (for inline actions) */
+.btn-sm {
+  padding: 6px 10px;
+  min-height: 36px;
+  font-size: .85rem;
+  border-radius: 8px;
+}
+
+/* Form specific buttons */
+.form-actions {
+  display:flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* Leaderboard table */
+.leaderboard {
+  overflow: auto;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+  border-radius: 12px;
+  padding: 8px;
+  margin-top: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.leaderboard table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 680px; /* allow horizontal scroll on mobile */
+}
+.leaderboard thead th {
+  position: sticky;
+  top: 0;
+  background: linear-gradient(180deg, rgba(12,8,4,0.5), rgba(8,6,4,0.36));
+  color: #fff;
+  text-align: left;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  z-index: 3;
+}
+.leaderboard tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  color: #efe6d6;
+  vertical-align: middle;
+}
+
+/* Zebra stripes for rows */
+.leaderboard tbody tr:nth-child(odd) {
+  background: rgba(255,255,255,0.012);
+}
+.leaderboard tbody tr:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+/* Rank badge and avatar */
+.rank {
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  font-weight:700;
+  color:var(--white);
+}
+.avatar {
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.06));
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  color:#fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+/* Score column emphasized */
+.score {
+  font-weight: 800;
+  color: var(--brand-gold-500);
+  text-align: right;
+}
+
+/* Responsive layout utilities */
+.row {
+  display:flex;
+  gap:16px;
+  align-items:flex-start;
+  flex-wrap:wrap;
+}
+.col {
+  flex:1 1 280px;
+  min-width: 220px;
+}
+
+/* Small helper / muted text */
+.muted { color: var(--neutral-500); font-size: .9rem; }
+
+/* Tiny helper under inputs */
+.form-hint { font-size: 0.85rem; color: var(--neutral-500); margin-top:6px; }
+
+/* Modal / card for ballot details */
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Ensure card heading contrast on dark theme (e.g., ballot category titles) */
+.card-title {
+  color: #F2ECE2;
+}
+
+/* Accessibility helpers */
+.visually-hidden {
+  position: absolute !important;
+  height: 1px; width: 1px;
+  overflow: hidden; clip: rect(1px,1px,1px,1px);
+  white-space: nowrap; border: 0; padding: 0; margin: -1px;
+}
+
+/* Print-friendly (for PDF export) */
+@media print {
+  body { background: #fff; color: #000; padding: 0; }
+  .app { box-shadow: none; background: #fff; color: #000; }
+  .leaderboard thead th { position: static; background: #eee; color: #000; }
+  .btn { display:none; }
+}
+
+/* Mobile tweaks */
+@media (max-width: 760px) {
+  body { padding: 16px; }
+  .app { padding: 18px; border-radius: 10px; }
+  .leaderboard table { min-width: 620px; }
+  .row { gap: 10px; }
+  .avatar { width:32px; height:32px; }
+}
+
+/* Optional micro-animations for nicer feel (subtle) */
+.fade-in { animation: fadeIn .28s ease both; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: translateY(0) } }

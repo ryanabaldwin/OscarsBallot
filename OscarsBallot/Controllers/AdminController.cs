@@ -1,0 +1,272 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OscarsBallot.Data;
+using OscarsBallot.Infrastructure;
+using OscarsBallot.Models;
+using OscarsBallot.ViewModels.Admin;
+
+namespace OscarsBallot.Controllers;
+
+public class AdminController(AppDbContext db) : Controller
+{
+    [HttpGet]
+    public async Task<IActionResult> Index()
+    {
+        var adminUser = await GetCurrentAdminUserAsync();
+        if (adminUser is null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        if (!adminUser.Admin)
+        {
+            return Forbid();
+        }
+
+        var model = await BuildWinnersModelAsync();
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Index(AdminWinnersViewModel model)
+    {
+        var adminUser = await GetCurrentAdminUserAsync();
+        if (adminUser is null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        if (!adminUser.Admin)
+        {
+            return Forbid();
+        }
+
+        var categories = await db.Categories
+            .AsNoTracking()
+            .Include(c => c.Nominees)
+            .OrderBy(c => c.CategoryName)
+            .ToListAsync();
+
+        var categoryLookup = categories.ToDictionary(
+            c => c.CategoryId,
+            c => c.Nominees.Select(n => n.NomineeId).ToHashSet());
+
+        var submitted = model.Categories
+            .Where(c => c.SelectedWinnerNomineeId.HasValue)
+            .ToList();
+
+        foreach (var category in submitted)
+        {
+            if (!categoryLookup.TryGetValue(category.CategoryId, out var nomineesForCategory) ||
+                !nomineesForCategory.Contains(category.SelectedWinnerNomineeId!.Value))
+            {
+                ModelState.AddModelError(string.Empty, "Invalid winner selection submitted.");
+                break;
+            }
+        }
+
+        if (!ModelState.IsValid)
+        {
+            var refreshed = await BuildWinnersModelAsync(model);
+            return View(refreshed);
+        }
+
+        if (submitted.Count == 0)
+        {
+            TempData["InfoMessage"] = "No winner changes were submitted.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var categoryIds = submitted.Select(c => c.CategoryId).Distinct().ToArray();
+        var existingByCategory = await db.Winners
+            .Where(w => categoryIds.Contains(w.CategoryId))
+            .ToDictionaryAsync(w => w.CategoryId);
+
+        foreach (var category in submitted)
+        {
+            var winnerNomineeId = category.SelectedWinnerNomineeId!.Value;
+            if (existingByCategory.TryGetValue(category.CategoryId, out var existingWinner))
+            {
+                existingWinner.WinnerNomineeId = winnerNomineeId;
+                continue;
+            }
+
+            db.Winners.Add(new Winner
+            {
+                CategoryId = category.CategoryId,
+                WinnerNomineeId = winnerNomineeId
+            });
+        }
+
+        await db.SaveChangesAsync();
+        await RecalculateUserScoresAsync();
+        TempData["SuccessMessage"] = "Winner selections have been updated.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Categories()
+    {
+        var adminUser = await GetCurrentAdminUserAsync();
+        if (adminUser is null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        if (!adminUser.Admin)
+        {
+            return Forbid();
+        }
+
+        var model = await BuildCategoriesModelAsync();
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Categories(AdminCategoriesViewModel model)
+    {
+        var adminUser = await GetCurrentAdminUserAsync();
+        if (adminUser is null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        if (!adminUser.Admin)
+        {
+            return Forbid();
+        }
+
+        if (model.Categories.Count == 0)
+        {
+            ModelState.AddModelError(string.Empty, "No categories were submitted.");
+        }
+
+        var duplicateNameExists = model.Categories
+            .GroupBy(c => c.CategoryName.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Any(g => g.Count() > 1);
+        if (duplicateNameExists)
+        {
+            ModelState.AddModelError(string.Empty, "Category names must be unique.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var categoryIds = model.Categories.Select(c => c.CategoryId).ToArray();
+        var existingCategories = await db.Categories
+            .Where(c => categoryIds.Contains(c.CategoryId))
+            .ToDictionaryAsync(c => c.CategoryId);
+
+        foreach (var item in model.Categories)
+        {
+            if (!existingCategories.TryGetValue(item.CategoryId, out var category))
+            {
+                ModelState.AddModelError(string.Empty, "Invalid category submission.");
+                return View(model);
+            }
+
+            category.CategoryName = item.CategoryName.Trim();
+            category.Points = item.Points;
+        }
+
+        await db.SaveChangesAsync();
+        await RecalculateUserScoresAsync();
+
+        TempData["SuccessMessage"] = "Categories updated successfully.";
+        return RedirectToAction(nameof(Categories));
+    }
+
+    private async Task<User?> GetCurrentAdminUserAsync()
+    {
+        var userId = HttpContext.Session.GetInt32(SessionKeys.UserId);
+        if (userId is null)
+        {
+            return null;
+        }
+
+        return await db.Users.FirstOrDefaultAsync(u => u.UserId == userId.Value);
+    }
+
+    private async Task<AdminWinnersViewModel> BuildWinnersModelAsync(AdminWinnersViewModel? posted = null)
+    {
+        var categories = await db.Categories
+            .AsNoTracking()
+            .Include(c => c.Nominees)
+            .OrderBy(c => c.CategoryName)
+            .ToListAsync();
+
+        var existingWinners = await db.Winners
+            .AsNoTracking()
+            .ToDictionaryAsync(w => w.CategoryId, w => w.WinnerNomineeId);
+
+        var postedByCategory = posted?.Categories.ToDictionary(c => c.CategoryId) ?? [];
+
+        return new AdminWinnersViewModel
+        {
+            Categories = categories.Select(category => new AdminWinnerCategoryViewModel
+            {
+                CategoryId = category.CategoryId,
+                CategoryName = category.CategoryName,
+                SelectedWinnerNomineeId = postedByCategory.GetValueOrDefault(category.CategoryId)?.SelectedWinnerNomineeId
+                                         ?? existingWinners.GetValueOrDefault(category.CategoryId),
+                Nominees = category.Nominees
+                    .OrderBy(n => n.Name)
+                    .Select(n => new AdminNomineeOptionViewModel
+                    {
+                        NomineeId = n.NomineeId,
+                        Name = n.Name
+                    })
+                    .ToList()
+            }).ToList()
+        };
+    }
+
+    private async Task<AdminCategoriesViewModel> BuildCategoriesModelAsync()
+    {
+        var categories = await db.Categories
+            .AsNoTracking()
+            .OrderBy(c => c.CategoryName)
+            .Select(c => new AdminCategoryEditItemViewModel
+            {
+                CategoryId = c.CategoryId,
+                CategoryName = c.CategoryName,
+                Points = c.Points
+            })
+            .ToListAsync();
+
+        return new AdminCategoriesViewModel
+        {
+            Categories = categories
+        };
+    }
+
+    private async Task RecalculateUserScoresAsync()
+    {
+        var scoreByUser = await (
+            from b in db.Ballots
+            join w in db.Winners
+                on new { b.CategoryId, b.NomineeId } equals new { w.CategoryId, NomineeId = w.WinnerNomineeId }
+            join c in db.Categories
+                on b.CategoryId equals c.CategoryId
+            group new { b, c } by b.UserId
+            into g
+            select new
+            {
+                UserId = g.Key,
+                Score = g.Sum(x => x.b.Rank == 1 ? (int)x.c.Points : (int)(x.c.Points / 2m))
+            })
+            .ToDictionaryAsync(x => x.UserId, x => x.Score);
+
+        var users = await db.Users.ToListAsync();
+        foreach (var user in users)
+        {
+            user.Score = scoreByUser.GetValueOrDefault(user.UserId, 0);
+        }
+
+        await db.SaveChangesAsync();
+    }
+}

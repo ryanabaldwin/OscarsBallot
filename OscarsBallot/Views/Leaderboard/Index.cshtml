@@ -1,0 +1,46 @@
+@model IReadOnlyList<OscarsBallot.Models.User>
+@{
+    ViewData["Title"] = "Leaderboard";
+}
+
+<h1 class="mb-3">Leaderboard</h1>
+<p class="text-muted">Current scores based on submitted ballots and category points.</p>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">No users yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>User</th>
+                <th class="text-end">Score</th>
+            </tr>
+            </thead>
+            <tbody>
+            @{
+                int displayedRank = 0;
+                int? previousScore = null;
+            }
+            @for (var i = 0; i < Model.Count; i++)
+            {
+                var entry = Model[i];
+                if (previousScore != entry.Score)
+                {
+                    displayedRank = i + 1;
+                    previousScore = entry.Score;
+                }
+                <tr>
+                    <td>@displayedRank</td>
+                    <td>@entry.FirstName @entry.LastName</td>
+                    <td class="text-end">@entry.Score</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
