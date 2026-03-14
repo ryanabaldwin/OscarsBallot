@@ -1,12 +1,32 @@
+using System.IO;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using OscarsBallot.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ---------- SQLite persistent path + connection string ----------
+string home = Environment.GetEnvironmentVariable("HOME") ?? AppContext.BaseDirectory;
+string dataFolder = Path.Combine(home, "site", "wwwroot", "App_Data");
+Directory.CreateDirectory(dataFolder); // ensure folder exists
+
+string dbFileName = "OscarsBallot.db";
+string dbPath = Path.Combine(dataFolder, dbFileName);
+
+// Allow override from Configuration (useful for local dev/testing)
+var envConn = builder.Configuration.GetConnectionString("DefaultConnection");
+string connectionString = string.IsNullOrWhiteSpace(envConn)
+    ? $"Data Source={dbPath}"
+    : envConn;
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Register DbContext with computed SQLite connection string
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite(connectionString));
+
 builder.Services.AddSession(options =>
 {
     options.Cookie.HttpOnly = true;
@@ -16,6 +36,26 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
+// ---------- Apply migrations (and create DB) before seeding ----------
+using (var scope = app.Services.CreateScope())
+{
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        // Apply any pending migrations (creates DB file if missing)
+        await db.Database.MigrateAsync();
+        logger.LogInformation("Applied migrations and ensured SQLite DB exists at: {DbPath}", dbPath);
+    }
+    catch (Exception ex)
+    {
+        var loggerEx = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        loggerEx.LogError(ex, "Error applying migrations on startup.");
+        throw; // rethrow so deployment fails clearly; remove if you prefer swallowing
+    }
+}
+
+// Seed data (your existing seeder)
 await DataSeeder.SeedAsync(app.Services);
 
 // Configure the HTTP request pipeline.
@@ -38,6 +78,5 @@ app.MapControllerRoute(
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();
