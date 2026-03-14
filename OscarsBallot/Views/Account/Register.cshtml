@@ -5,6 +5,7 @@
 
 <h1 class="mb-3">Create Account</h1>
 <p class="text-muted">Create an account to submit your Oscar ballot and track leaderboard results.</p>
+<p class="mb-4">You may be wondering: why isn't this a username and password? Since this is a simple app that I'm not planning to send to anyone but friends/acquaintances, I wanted to make it simple for y'all to create and access an account. Additionally, I don't want anyone to have to worry about giving me a password that you might use for other things. Sign up with your first and last name, and create a PIN for uniqueness (don't share it with anyone unless you want them wrecking your ballot). If you have a common first and last name, pray that you're the first to sign up because there can't be any duplicates lol.</p>
 
 <form asp-action="Register" method="post" class="mt-4">
     @Html.AntiForgeryToken()
