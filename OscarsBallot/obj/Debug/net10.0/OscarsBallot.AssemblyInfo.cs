@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OscarsBallot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7a7695c3e65aadf190ad0fc6bed3423e4ac85350")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7616c764f78b6f749c8171410ce787dfbddd5019")]
 [assembly: System.Reflection.AssemblyProductAttribute("OscarsBallot")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OscarsBallot")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

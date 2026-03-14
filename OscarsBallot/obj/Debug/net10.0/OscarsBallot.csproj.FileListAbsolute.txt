@@ -213,3 +213,5 @@
 /Users/ryanbaldwin/RiderProjects/OscarsBallot/OscarsBallot/obj/Debug/net10.0/compressed/cb9011kp67-{0}-hux840yh4h-hux840yh4h.gz
 /Users/ryanbaldwin/RiderProjects/OscarsBallot/OscarsBallot/obj/Debug/net10.0/OscarsBallot.sourcelink.json
 /Users/ryanbaldwin/RiderProjects/OscarsBallot/OscarsBallot/obj/Debug/net10.0/compressed/oknju5jklx-{0}-ytwv2669i8-ytwv2669i8.gz
+/Users/ryanbaldwin/RiderProjects/OscarsBallot/OscarsBallot/bin/Debug/net10.0/Npgsql.dll
+/Users/ryanbaldwin/RiderProjects/OscarsBallot/OscarsBallot/bin/Debug/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll

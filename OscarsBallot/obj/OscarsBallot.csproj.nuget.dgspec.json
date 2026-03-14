@@ -10,7 +10,7 @@
         "projectUniqueName": "/Users/ryanbaldwin/RiderProjects/OscarsBallot/OscarsBallot/OscarsBallot.csproj",
         "projectName": "OscarsBallot",
         "projectPath": "/Users/ryanbaldwin/RiderProjects/OscarsBallot/OscarsBallot/OscarsBallot.csproj",
-        "packagesPath": "/Users/ryanbaldwin/.nuget/packages/",
+        "packagesPath": "/var/folders/2g/tj34mjcj5lg4r2brdzq8_zs80000gn/T/cursor-sandbox-cache/b9c444c2288e0833ce47e438ec77a3ce/nuget",
         "outputPath": "/Users/ryanbaldwin/RiderProjects/OscarsBallot/OscarsBallot/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
@@ -53,6 +53,10 @@
             "Microsoft.EntityFrameworkCore.Sqlite": {
               "target": "Package",
               "version": "[10.0.3, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[10.0.1, )"
             }
           },
           "imports": [

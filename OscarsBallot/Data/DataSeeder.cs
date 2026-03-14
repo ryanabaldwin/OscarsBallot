@@ -10,8 +10,6 @@ public static class DataSeeder
         using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        await db.Database.MigrateAsync();
-
         var categoriesToSeed = new[]
         {
             "Best Picture",

@@ -3,7 +3,7 @@ using OscarsBallot.Models;
 
 namespace OscarsBallot.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public class AppDbContext(DbContextOptions options) : DbContext(options)
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<Category> Categories => Set<Category>();

@@ -6,26 +6,44 @@ using OscarsBallot.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ---------- SQLite persistent path + connection string ----------
-string home = Environment.GetEnvironmentVariable("HOME") ?? AppContext.BaseDirectory;
-string dataFolder = Path.Combine(home, "site", "wwwroot", "App_Data");
-Directory.CreateDirectory(dataFolder); // ensure folder exists
-
-string dbFileName = "OscarsBallot.db";
-string dbPath = Path.Combine(dataFolder, dbFileName);
-
-// Allow override from Configuration (useful for local dev/testing)
-var envConn = builder.Configuration.GetConnectionString("DefaultConnection");
-string connectionString = string.IsNullOrWhiteSpace(envConn)
-    ? $"Data Source={dbPath}"
-    : envConn;
-
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Register DbContext with computed SQLite connection string
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(connectionString));
+var configuredConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+string? sqliteDbPath = null;
+
+if (builder.Environment.IsDevelopment())
+{
+    string sqliteConnectionString;
+    if (string.IsNullOrWhiteSpace(configuredConnectionString))
+    {
+        string home = Environment.GetEnvironmentVariable("HOME") ?? AppContext.BaseDirectory;
+        string dataFolder = Path.Combine(home, "site", "wwwroot", "App_Data");
+        Directory.CreateDirectory(dataFolder);
+
+        string dbFileName = "OscarsBallot.db";
+        sqliteDbPath = Path.Combine(dataFolder, dbFileName);
+        sqliteConnectionString = $"Data Source={sqliteDbPath}";
+    }
+    else
+    {
+        sqliteConnectionString = configuredConnectionString;
+    }
+
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlite(sqliteConnectionString));
+}
+else
+{
+    if (string.IsNullOrWhiteSpace(configuredConnectionString))
+    {
+        throw new InvalidOperationException(
+            "Production database connection string is missing. Set ConnectionStrings__DefaultConnection.");
+    }
+
+    builder.Services.AddDbContext<AppDbContext, PostgresAppDbContext>(options =>
+        options.UseNpgsql(configuredConnectionString));
+}
 
 builder.Services.AddSession(options =>
 {
@@ -45,7 +63,14 @@ using (var scope = app.Services.CreateScope())
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         // Apply any pending migrations (creates DB file if missing)
         await db.Database.MigrateAsync();
-        logger.LogInformation("Applied migrations and ensured SQLite DB exists at: {DbPath}", dbPath);
+        if (builder.Environment.IsDevelopment())
+        {
+            logger.LogInformation("Applied migrations and ensured SQLite DB exists at: {DbPath}", sqliteDbPath);
+        }
+        else
+        {
+            logger.LogInformation("Applied migrations for PostgreSQL.");
+        }
     }
     catch (Exception ex)
     {
