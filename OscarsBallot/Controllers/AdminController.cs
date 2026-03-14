@@ -52,12 +52,15 @@ public class AdminController(AppDbContext db) : Controller
             c => c.CategoryId,
             c => c.Nominees.Select(n => n.NomineeId).ToHashSet());
 
-        var submitted = model.Categories
-            .Where(c => c.SelectedWinnerNomineeId.HasValue)
-            .ToList();
+        var submitted = model.Categories;
 
         foreach (var category in submitted)
         {
+            if (!category.SelectedWinnerNomineeId.HasValue)
+            {
+                continue;
+            }
+
             if (!categoryLookup.TryGetValue(category.CategoryId, out var nomineesForCategory) ||
                 !nomineesForCategory.Contains(category.SelectedWinnerNomineeId!.Value))
             {
@@ -72,36 +75,54 @@ public class AdminController(AppDbContext db) : Controller
             return View(refreshed);
         }
 
-        if (submitted.Count == 0)
-        {
-            TempData["InfoMessage"] = "No winner changes were submitted.";
-            return RedirectToAction(nameof(Index));
-        }
-
         var categoryIds = submitted.Select(c => c.CategoryId).Distinct().ToArray();
         var existingByCategory = await db.Winners
             .Where(w => categoryIds.Contains(w.CategoryId))
             .ToDictionaryAsync(w => w.CategoryId);
 
+        var hasChanges = false;
         foreach (var category in submitted)
         {
-            var winnerNomineeId = category.SelectedWinnerNomineeId!.Value;
             if (existingByCategory.TryGetValue(category.CategoryId, out var existingWinner))
             {
-                existingWinner.WinnerNomineeId = winnerNomineeId;
+                if (!category.SelectedWinnerNomineeId.HasValue)
+                {
+                    db.Winners.Remove(existingWinner);
+                    hasChanges = true;
+                    continue;
+                }
+
+                var winnerNomineeId = category.SelectedWinnerNomineeId.Value;
+                if (existingWinner.WinnerNomineeId != winnerNomineeId)
+                {
+                    existingWinner.WinnerNomineeId = winnerNomineeId;
+                    hasChanges = true;
+                }
+                continue;
+            }
+
+            if (!category.SelectedWinnerNomineeId.HasValue)
+            {
                 continue;
             }
 
             db.Winners.Add(new Winner
             {
                 CategoryId = category.CategoryId,
-                WinnerNomineeId = winnerNomineeId
+                WinnerNomineeId = category.SelectedWinnerNomineeId.Value
             });
+            hasChanges = true;
+        }
+
+        if (!hasChanges)
+        {
+            TempData["InfoMessage"] = "No winner changes were submitted.";
+            return RedirectToAction(nameof(Index));
         }
 
         await db.SaveChangesAsync();
         await RecalculateUserScoresAsync();
-        TempData["SuccessMessage"] = "Winner selections have been updated.";
+        TempData["SuccessMessage"] = "Winner selections updated.";
         return RedirectToAction(nameof(Index));
     }
 
