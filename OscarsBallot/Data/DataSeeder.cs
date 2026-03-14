@@ -58,5 +58,15 @@ public static class DataSeeder
             db.Categories.AddRange(newCategories);
             await db.SaveChangesAsync();
         }
+
+        if (!await db.AppSettings.AnyAsync())
+        {
+            db.AppSettings.Add(new AppSetting
+            {
+                AppSettingId = 1,
+                BallotsLockedOverride = null
+            });
+            await db.SaveChangesAsync();
+        }
     }
 }

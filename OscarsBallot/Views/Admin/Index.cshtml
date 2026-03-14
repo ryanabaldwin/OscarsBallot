@@ -9,6 +9,41 @@
     <a asp-action="Categories" class="btn btn-outline-secondary">Manage Categories</a>
 </p>
 
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">Ballot Editing Control</h5>
+        <p class="mb-2">
+            Current status:
+            <strong>@(Model.IsBallotEditingLocked ? "Locked" : "Open")</strong>
+            @if (Model.BallotsLockedOverride.HasValue)
+            {
+                <span>(manual override)</span>
+            }
+            else
+            {
+                <span>(automatic cutoff at @Model.CeremonyStartMountain.ToString("h:mm tt, dddd MMM d, yyyy") MT)</span>
+            }
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+            <form asp-action="SetBallotEditingMode" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="mode" value="lock" />
+                <button type="submit" class="btn btn-outline-danger">Lock Ballots Now</button>
+            </form>
+            <form asp-action="SetBallotEditingMode" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="mode" value="unlock" />
+                <button type="submit" class="btn btn-outline-success">Force Unlock</button>
+            </form>
+            <form asp-action="SetBallotEditingMode" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="mode" value="auto" />
+                <button type="submit" class="btn btn-outline-secondary">Use Automatic Ceremony Cutoff</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 @if (TempData["SuccessMessage"] is string successMessage)
 {
     <div class="alert alert-success">@successMessage</div>

@@ -313,6 +313,23 @@ input[disabled], select[disabled], textarea[disabled] {
   color: #F2ECE2;
 }
 
+/* Admin categories table contrast improvements */
+.admin-categories-table thead th {
+  background: rgba(0, 0, 0, 0.45);
+  color: #F2ECE2;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.admin-categories-table tbody td {
+  background: rgba(0, 0, 0, 0.22);
+  color: #F2ECE2;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.admin-categories-table.table-striped > tbody > tr:nth-of-type(odd) > * {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 /* Accessibility helpers */
 .visually-hidden {
   position: absolute !important;

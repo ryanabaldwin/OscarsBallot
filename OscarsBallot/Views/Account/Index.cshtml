@@ -5,6 +5,7 @@
 
 <h1 class="mb-3">My Account</h1>
 <p class="text-muted">Signed in as @Model.UserDisplayName</p>
+<p class="text-muted">Current Score: @Model.CurrentScore.ToString("0.##")</p>
 
 @if (!Model.HasBallot)
 {
@@ -20,6 +21,7 @@ else
             <thead>
             <tr>
                 <th>Category</th>
+                <th>Points</th>
                 <th>First Choice</th>
                 <th>Second Choice</th>
             </tr>
@@ -29,6 +31,7 @@ else
             {
                 <tr>
                     <td>@category.CategoryName</td>
+                    <td>@category.Points.ToString("0.##")</td>
                     <td>@category.FirstChoiceName</td>
                     <td>@category.SecondChoiceName</td>
                 </tr>

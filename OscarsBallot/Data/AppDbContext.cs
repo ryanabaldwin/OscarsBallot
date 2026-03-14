@@ -10,6 +10,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Nominee> Nominees => Set<Nominee>();
     public DbSet<Ballot> Ballots => Set<Ballot>();
     public DbSet<Winner> Winners => Set<Winner>();
+    public DbSet<AppSetting> AppSettings => Set<AppSetting>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

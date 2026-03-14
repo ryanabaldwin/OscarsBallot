@@ -5,6 +5,12 @@
 
 <h1 class="mb-3">Oscar Ballot</h1>
 <p class="text-muted">Choose your first and second pick in each category, then save your ballot.</p>
+@if (Model.IsEditingLocked)
+{
+    <div class="alert alert-warning">
+        Ballot editing is locked.
+    </div>
+}
 
 @if (TempData["SuccessMessage"] is string message)
 {
@@ -20,7 +26,7 @@
         <div class="card mb-3">
             <div class="card-body">
                 <input type="hidden" asp-for="Categories[i].CategoryId"/>
-                <h5 class="card-title">@Model.Categories[i].CategoryName</h5>
+                <h5 class="card-title">@Model.Categories[i].CategoryName (@Model.Categories[i].Points.ToString("0.##") pts)</h5>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
@@ -65,7 +71,10 @@
         </div>
     }
 
-    <button type="submit" class="btn btn-primary">Save Ballot</button>
+    @if (!Model.IsEditingLocked)
+    {
+        <button type="submit" class="btn btn-primary">Save Ballot</button>
+    }
 </form>
 
 @section Scripts {

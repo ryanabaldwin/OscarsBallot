@@ -6,6 +6,7 @@ public class BallotCategorySelectionViewModel
 {
     public int CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
+    public decimal Points { get; set; }
     public List<BallotNomineeOptionViewModel> Nominees { get; set; } = [];
 
     [Required]

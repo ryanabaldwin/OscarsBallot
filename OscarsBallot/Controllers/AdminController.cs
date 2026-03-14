@@ -45,7 +45,7 @@ public class AdminController(AppDbContext db) : Controller
         var categories = await db.Categories
             .AsNoTracking()
             .Include(c => c.Nominees)
-            .OrderBy(c => c.CategoryName)
+            .OrderBy(c => c.CategoryId)
             .ToListAsync();
 
         var categoryLookup = categories.ToDictionary(
@@ -102,6 +102,34 @@ public class AdminController(AppDbContext db) : Controller
         await db.SaveChangesAsync();
         await RecalculateUserScoresAsync();
         TempData["SuccessMessage"] = "Winner selections have been updated.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetBallotEditingMode(string mode)
+    {
+        var adminUser = await GetCurrentAdminUserAsync();
+        if (adminUser is null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        if (!adminUser.Admin)
+        {
+            return Forbid();
+        }
+
+        var settings = await GetOrCreateAppSettingAsync();
+        settings.BallotsLockedOverride = mode switch
+        {
+            "lock" => true,
+            "unlock" => false,
+            _ => null
+        };
+
+        await db.SaveChangesAsync();
+        TempData["SuccessMessage"] = "Ballot editing mode updated.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -196,7 +224,7 @@ public class AdminController(AppDbContext db) : Controller
         var categories = await db.Categories
             .AsNoTracking()
             .Include(c => c.Nominees)
-            .OrderBy(c => c.CategoryName)
+            .OrderBy(c => c.CategoryId)
             .ToListAsync();
 
         var existingWinners = await db.Winners
@@ -204,9 +232,14 @@ public class AdminController(AppDbContext db) : Controller
             .ToDictionaryAsync(w => w.CategoryId, w => w.WinnerNomineeId);
 
         var postedByCategory = posted?.Categories.ToDictionary(c => c.CategoryId) ?? [];
+        var settings = await db.AppSettings.AsNoTracking().FirstOrDefaultAsync(x => x.AppSettingId == 1);
+        var isLocked = BallotEditingPolicy.IsBallotEditingLocked(settings?.BallotsLockedOverride, DateTime.UtcNow);
 
         return new AdminWinnersViewModel
         {
+            IsBallotEditingLocked = isLocked,
+            BallotsLockedOverride = settings?.BallotsLockedOverride,
+            CeremonyStartMountain = BallotEditingPolicy.CeremonyStartMountain,
             Categories = categories.Select(category => new AdminWinnerCategoryViewModel
             {
                 CategoryId = category.CategoryId,
@@ -225,11 +258,30 @@ public class AdminController(AppDbContext db) : Controller
         };
     }
 
+    private async Task<AppSetting> GetOrCreateAppSettingAsync()
+    {
+        var settings = await db.AppSettings.FirstOrDefaultAsync(x => x.AppSettingId == 1);
+        if (settings is not null)
+        {
+            return settings;
+        }
+
+        settings = new AppSetting
+        {
+            AppSettingId = 1,
+            BallotsLockedOverride = null
+        };
+
+        db.AppSettings.Add(settings);
+        await db.SaveChangesAsync();
+        return settings;
+    }
+
     private async Task<AdminCategoriesViewModel> BuildCategoriesModelAsync()
     {
         var categories = await db.Categories
             .AsNoTracking()
-            .OrderBy(c => c.CategoryName)
+            .OrderBy(c => c.CategoryId)
             .Select(c => new AdminCategoryEditItemViewModel
             {
                 CategoryId = c.CategoryId,
@@ -257,14 +309,14 @@ public class AdminController(AppDbContext db) : Controller
             select new
             {
                 UserId = g.Key,
-                Score = g.Sum(x => x.b.Rank == 1 ? (int)x.c.Points : (int)(x.c.Points / 2m))
+                Score = g.Sum(x => x.b.Rank == 1 ? x.c.Points : x.c.Points / 2m)
             })
             .ToDictionaryAsync(x => x.UserId, x => x.Score);
 
         var users = await db.Users.ToListAsync();
         foreach (var user in users)
         {
-            user.Score = scoreByUser.GetValueOrDefault(user.UserId, 0);
+            user.Score = scoreByUser.GetValueOrDefault(user.UserId, 0m);
         }
 
         await db.SaveChangesAsync();

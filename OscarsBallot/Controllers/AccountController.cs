@@ -33,19 +33,20 @@ public class AccountController(AppDbContext db) : Controller
             .Join(db.Categories,
                 b => b.CategoryId,
                 c => c.CategoryId,
-                (b, c) => new { b.CategoryId, c.CategoryName, b.Rank, b.NomineeId })
+                (b, c) => new { b.CategoryId, c.CategoryName, c.Points, b.Rank, b.NomineeId })
             .Join(db.Nominees,
                 x => x.NomineeId,
                 n => n.NomineeId,
-                (x, n) => new { x.CategoryId, x.CategoryName, x.Rank, NomineeName = n.Name })
+                (x, n) => new { x.CategoryId, x.CategoryName, x.Points, x.Rank, NomineeName = n.Name })
             .ToListAsync();
 
         var categories = selections
-            .GroupBy(x => new { x.CategoryId, x.CategoryName })
-            .OrderBy(x => x.Key.CategoryName)
+            .GroupBy(x => new { x.CategoryId, x.CategoryName, x.Points })
+            .OrderBy(x => x.Key.CategoryId)
             .Select(group => new AccountBallotCategoryViewModel
             {
                 CategoryName = group.Key.CategoryName,
+                Points = group.Key.Points,
                 FirstChoiceName = group.FirstOrDefault(x => x.Rank == 1)?.NomineeName ?? "-",
                 SecondChoiceName = group.FirstOrDefault(x => x.Rank == 2)?.NomineeName ?? "-"
             })
@@ -54,6 +55,7 @@ public class AccountController(AppDbContext db) : Controller
         var model = new AccountBallotViewModel
         {
             UserDisplayName = $"{user.FirstName} {user.LastName}",
+            CurrentScore = user.Score,
             HasBallot = categories.Count > 0,
             Categories = categories
         };

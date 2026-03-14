@@ -18,7 +18,7 @@ public class User
     [MaxLength(4)]
     public string Pin { get; set; } = string.Empty;
 
-    public int Score { get; set; }
+    public decimal Score { get; set; }
 
     public bool Admin { get; set; }
 

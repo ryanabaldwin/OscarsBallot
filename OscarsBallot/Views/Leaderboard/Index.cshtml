@@ -24,7 +24,7 @@ else
             <tbody>
             @{
                 int displayedRank = 0;
-                int? previousScore = null;
+                decimal? previousScore = null;
             }
             @for (var i = 0; i < Model.Count; i++)
             {
@@ -37,7 +37,7 @@ else
                 <tr>
                     <td>@displayedRank</td>
                     <td>@entry.FirstName @entry.LastName</td>
-                    <td class="text-end">@entry.Score</td>
+                    <td class="text-end">@entry.Score.ToString("0.##")</td>
                 </tr>
             }
             </tbody>

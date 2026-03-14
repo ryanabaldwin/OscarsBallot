@@ -19,6 +19,8 @@ public class BallotController(AppDbContext db) : Controller
         }
 
         var model = await BuildSubmissionModelAsync(userId.Value);
+        var settings = await db.AppSettings.AsNoTracking().FirstOrDefaultAsync(x => x.AppSettingId == 1);
+        model.IsEditingLocked = BallotEditingPolicy.IsBallotEditingLocked(settings?.BallotsLockedOverride, DateTime.UtcNow);
         return View(model);
     }
 
@@ -30,6 +32,16 @@ public class BallotController(AppDbContext db) : Controller
         if (userId is null)
         {
             return RedirectToAction("Login", "Account");
+        }
+
+        var settings = await db.AppSettings.AsNoTracking().FirstOrDefaultAsync(x => x.AppSettingId == 1);
+        var isLocked = BallotEditingPolicy.IsBallotEditingLocked(settings?.BallotsLockedOverride, DateTime.UtcNow);
+        if (isLocked)
+        {
+            var lockedModel = await BuildSubmissionModelAsync(userId.Value, model);
+            lockedModel.IsEditingLocked = true;
+            ModelState.AddModelError(string.Empty, "Ballot editing is closed.");
+            return View(lockedModel);
         }
 
         model = await BuildSubmissionModelAsync(userId.Value, model);
@@ -77,7 +89,7 @@ public class BallotController(AppDbContext db) : Controller
     {
         var categories = await db.Categories
             .Include(x => x.Nominees)
-            .OrderBy(x => x.CategoryName)
+            .OrderBy(x => x.CategoryId)
             .ToListAsync();
 
         var existingSelections = await db.Ballots
@@ -100,6 +112,7 @@ public class BallotController(AppDbContext db) : Controller
                 {
                     CategoryId = category.CategoryId,
                     CategoryName = category.CategoryName,
+                    Points = category.Points,
                     FirstChoiceNomineeId = posted?.FirstChoiceNomineeId ?? firstExisting,
                     SecondChoiceNomineeId = posted?.SecondChoiceNomineeId ?? secondExisting,
                     Nominees = category.Nominees

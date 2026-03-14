@@ -3,6 +3,9 @@ namespace OscarsBallot.ViewModels.Admin;
 public class AdminWinnersViewModel
 {
     public List<AdminWinnerCategoryViewModel> Categories { get; set; } = [];
+    public bool IsBallotEditingLocked { get; set; }
+    public bool? BallotsLockedOverride { get; set; }
+    public DateTime CeremonyStartMountain { get; set; }
 }
 
 public class AdminWinnerCategoryViewModel

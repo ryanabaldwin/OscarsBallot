@@ -3,6 +3,7 @@ namespace OscarsBallot.ViewModels.Account;
 public class AccountBallotViewModel
 {
     public string UserDisplayName { get; set; } = string.Empty;
+    public decimal CurrentScore { get; set; }
     public bool HasBallot { get; set; }
     public List<AccountBallotCategoryViewModel> Categories { get; set; } = [];
 }
@@ -10,6 +11,7 @@ public class AccountBallotViewModel
 public class AccountBallotCategoryViewModel
 {
     public string CategoryName { get; set; } = string.Empty;
+    public decimal Points { get; set; }
     public string FirstChoiceName { get; set; } = string.Empty;
     public string SecondChoiceName { get; set; } = string.Empty;
 }
