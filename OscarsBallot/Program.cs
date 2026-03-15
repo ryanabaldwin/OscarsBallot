@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using OscarsBallot.Data; // <-- adjust if your namespace differs
+using OscarsBallot.Data; //
 
 var builder = WebApplication.CreateBuilder(args);
 
